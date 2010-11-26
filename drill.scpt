@@ -1,5 +1,7 @@
 #!/usr/bin/osascript
 # vim: set filetype=applescript :
+-- Copyright (c) 2010 Gregory A Frascadore
+-- Licensed under the Open Software License version 3.0
 ----
 -- drill
 --   Usage
