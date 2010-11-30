@@ -4,14 +4,55 @@
 -- Licensed under the Open Software License version 3.0
 ----
 -- drill
---   Usage
---      drill file.studycard.txt
+--   Basic Usage
+--      drill questions.tsv
 --
---   Read a StudyCard data file and speak the question in english
---   and the answer in Italian.
+--   Read and record each row of a tab separated data file, speak
+--   each column entry in the voice named by the column heading. 
+--   Recording each row in a separate Wireshark recording.
 --
---   Currently works around the Cepstral Vittoria bug by invoking 
---   english in a 'do shell script'
+--   For example, the following data speaks an english sentence
+--   and two Italian responses, recording each triple to a separate
+--   Wireshark recording:
+--
+--   Alex                  Cepstral Vittoria             Cepstral Vittoria
+--   don't speak too fast  non parle troppo velocemente  non parli troppo velocemente
+--   # example comment
+--   how old is your son?  suo figlio, quanti ani ha?    quanti ani ha suo figlio?
+--
+--   Example Usage
+--   0. Install Cepstral Vittoria voice and Wiretap Studio
+--   1. Set Wiretap studio to record to Library
+--      Wiretap Studio > Window > Library {
+--         + exampleFolder
+--      }
+--
+--   2. Set Wiretap studio to record to that folder
+--      Wiretap Studio > Preferences > Saving {
+--         Save Files To: exampleFolder
+--         Prefix :  anyPrefix
+--         Suffix: increment
+--      }
+--
+--   3. Start the speaking
+--      $ drill questions.tsv
+--      Each row of the .tsv will be spoken to one recording
+--      in the exampleFolder. This will take time depending
+--      on how many rows and columns are in the .tsv file.
+--
+--   4. Create a playlist in iTunes
+--      iTunes {
+--         + examplePlaylist
+--      }
+--
+--   5. From Wiretap Studio, send recordings to iTunes playlist
+--      Wiretap Studio > exampleFolder {
+--          cmd-A (select all)
+--          click iTunes {
+--              select examplePlaylist
+--              click Send
+--          }
+--      }
 
 property nl: (ASCII character 10)
 property tab: (ASCII character 9)
@@ -356,8 +397,3 @@ on run argv
     end
 end
 
-on selftest(argv)
-    global asunit
-    set asunit to load script file ¬
-        ((path to scripts folder as string) & "ASUnist.scpt")
-end

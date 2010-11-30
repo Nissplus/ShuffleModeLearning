@@ -1,0 +1,20 @@
+Copyright (c) 2010 Gregory A Frascadore
+Licensed under the Open Software License version 3.0
+
+drill
+  Basic Usage
+     drill questions.tsv
+
+  Read and record each row of a tab separated data file. Each
+  column entry is spoken in the voice named by the column heading.
+  For Example:
+
+  Alex                  Cepstral Vittoria             Cepstral Vittoria
+  don't speak too fast  non parle troppo velocemente  non parli troppo velocemente
+  how old is your son?  suo figlio, quanti ani ha?    quanti ani ha suo figlio?
+  # example comment
+
+  Issues
+  The columns must be tab separated, any spaces will cause problems.
+  Use phrases.tsv as an example.
+
