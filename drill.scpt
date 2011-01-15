@@ -58,6 +58,7 @@ property nl: (ASCII character 10)
 property tab: (ASCII character 9)
 property squote: (ASCII character 39)
 property pwd: do shell script "pwd"
+property delayk: 2.0
 
 on filter(L, crit) 
     script filterer 
@@ -100,6 +101,14 @@ to join(fields,sep)
     return phrase
 end join
 
+to atoi(s)
+    try
+        return s as integer
+    on error
+        return null
+    end try
+end atoi
+
 on escq(s)
     -- quoting rules:
     --   a) For the shell, quotes don't quote, they toggle interpretation mode on
@@ -127,7 +136,8 @@ on fileExists(f)
     end
 end 
 
-on realLine(xline)
+on stripComments(xline)
+    -- strip comments beginning with #
     set cs to {}
     repeat with c in characters of xline
         set c to contents of c
@@ -138,7 +148,7 @@ on realLine(xline)
         end if
     end repeat
     return cs as string
-end realLine
+end stripComments
 
 on usageError()
     local stdout
@@ -169,7 +179,6 @@ script VoiceRegistry
         try
             return lookupKey(k, voiceTable)
         on error msg number -50
-            -- error "lookupVoice(" & k & ") : " & msg number -50
             error "lookupVoice : " & msg number -50
         end
     end
@@ -196,7 +205,6 @@ script AVoice
     to doSay(m)
         local shellCmd
         set shellCmd to my theCommand & " " & squote & my openingOpts & " " & m & " " & my closingOpts & squote
-        -- tell application "Finder" to display dialog shellCmd
         do shell script shellCmd
     end doSay
 
@@ -216,10 +224,36 @@ script VittoriaVoice
     end doSay
 end script
 
+script JeanPierre
+    property parent : AVoice
+    property theVoice : VoiceRegistry's registerVoices({"Jean-Pierre", "Cepstral Jean-Pierre"}, me)
+    property voiceVol : 100
+    property theCommand : "swift -n Jean-Pierre"
+    property openingOpts : missing value
+    property closingOpts : "</prosody>"
+        
+    on doSay(msg)
+        set my openingOpts to ("<prosody volume=\"" & my voiceVol as string) & "\">"
+        continue doSay(msg)
+    end doSay
+end script
+
 script AlexVoice
     property parent : AVoice
     property theVoice : VoiceRegistry's registerVoice("Alex", me)
     property theCommand : "say -v Alex"
+    property openingOpts : ""
+    property closingOpts : ""
+        
+    on doSay(msg)
+        continue doSay(msg)
+    end doSay
+end script
+
+script VickiVoice
+    property parent : AVoice
+    property theVoice : VoiceRegistry's registerVoice("Vicki", me)
+    property theCommand : "say -v Vicki"
     property openingOpts : ""
     property closingOpts : ""
         
@@ -265,7 +299,7 @@ on makeFileSpeaker(recorder)
         property parent: ASpeaker
 
         to speakTheLine(theLine, voiceList)
-            set theLine to realLine(theLine)
+            set theLine to stripComments(theLine)
             set wordList to split(theLine, tab)
             if length of wordList is 0 then
                 return
@@ -280,7 +314,7 @@ on makeFileSpeaker(recorder)
                     set voiceName to contents of item i of voiceList
                     set voice to VoiceRegistry's lookupVoice(voiceName)
                     voice's doSay(phrase)
-                    doDelay(2.5)
+                    doDelay(delayk)
                 end repeat
                 continue speakTheLine()
             on error msg
@@ -298,7 +332,7 @@ on makeFileSpeaker(recorder)
                set theRef to open for access theFile
                repeat
                    set firstLine to (read theRef before nl)
-                   set voiceList to split(realLine(firstLine), tab)
+                   set voiceList to split(stripComments(firstLine), tab)
                    if length of voiceList > 0 then
                        exit repeat
                    end
@@ -380,9 +414,13 @@ on run argv
     end
 
     repeat with f in argv
-        set f to pwd & "/" & f
-        if not fileExists(POSIX file f) then
-            usageError()
+        if class of atoi(f) is "integer" then
+                set delayk to atoi(f)
+        else
+            set f to pwd & "/" & f
+            if not fileExists(POSIX file f) then
+                usageError()
+            end
         end
     end
 
